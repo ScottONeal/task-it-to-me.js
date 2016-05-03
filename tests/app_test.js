@@ -7,6 +7,7 @@ test.Test.prototype.notMatch = tapeMethods.notMatch;
 
 var TestStreams  = require(__dirname + '/support/test_streams');
 var App          = require(__dirname + '/../lib/app');
+var colors       = require('../lib/colors');
 
 var testStreams, app;
 
@@ -150,7 +151,6 @@ test('adding a task', function(test) {
   testStreams.mockInput(['a', 'House work', 'e', 'House work', 'a', 'clean out the freezer', 'q']);
 });
 
-
 test('listing tasks when no tasks exists', function(test) {
   setup();
   test.plan(1);
@@ -196,6 +196,46 @@ test('editing a task that does exist', function(test) {
   });
 
   testStreams.mockInput(['a', 'House work', 'e', 'House work', 'a', 'clean out the freezer', 'e', 'clean out the freezer', 'clean out fridge', 'ls', 'q']);
+});
+
+test('editing a task returns a prompt', function(test) {
+  setup();
+  test.plan(2);
+
+  app.run(function() {
+    var output = testStreams.plainOutput();
+    test.match(output, 'Which task:');
+    test.match(output, 'Edit clean to:')
+//    test.match(output, 'task changed to: clean out the fridge');
+  });
+
+  testStreams.mockInput(['a', 'House work', 'e', 'House work', 'a', 'clean', 'e', 'clean', 'clean out the fridge', 'q']);
+});
+
+test('deleting a task returns a prompt', function(test) {
+  setup();
+  test.plan(1);
+
+  app.run(function() {
+    var output = testStreams.plainOutput();
+    test.match(output, 'Which task:');
+//    test.match(output, 'task changed to: clean out the fridge');
+  });
+
+  testStreams.mockInput(['a', 'House work', 'e', 'House work', 'a', 'clean', 'd', 'clean', 'q']);
+});
+
+test('finishing a task returns a prompt', function(test) {
+  setup();
+  test.plan(1);
+
+  app.run(function() {
+    var output = testStreams.plainOutput();
+    test.match(output, 'Which task:');
+//    test.match(output, 'task changed to: clean out the fridge');
+  });
+
+  testStreams.mockInput(['a', 'House work', 'e', 'House work', 'a', 'clean', 'f', 'clean', 'q']);
 });
 
 test('deleting a task when tasks are empty', function(test) {
@@ -296,4 +336,10 @@ test('bug: app hangs at unknown command inside the tasks menu', function(test) {
   });
 
   testStreams.mockInput(['a', 'Chores', 'e', 'Chores', 'jj', 'q']);
+});
+
+test('colors: green() should return a string wrapped in green text', function(test) {
+  test.plan(1);
+  var result = colors.green('test');
+  test.match(result, "\x1b[38;5;40mtest\x1b[0m");
 });
